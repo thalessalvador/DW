@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: dim_customer
+    description: "Dimensão de clientes com histórico SCD2 proveniente do snapshot de contas Northwind + Metabase."
+    columns:
+      - name: customer_sk
+        tests: [not_null, unique]
+      - name: customer_nk
+        tests: [not_null, unique]
+      - name: customer_name
+        tests: [not_null]
+  - name: fact_sales
+    description: "Fato unificada de vendas/pedidos dos canais B2B (Northwind) e B2C/SaaS (Metabase)."
+    columns:
+      - name: order_nk
+        tests: [not_null]
+      - name: customer_nk
+        tests: [not_null]
+      - name: product_nk
+        tests: [not_null]

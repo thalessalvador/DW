@@ -1,0 +1,56 @@
+version: 2
+
+sources:
+  - name: northwind
+    description: "Base operacional Northwind (B2B) exposta no schema public do DW (via FDW ou cópia)."
+    schema: public
+    tables:
+      - name: customer
+        description: "Clientes corporativos Northwind."
+      - name: salesorder
+        description: "Pedidos B2B."
+      - name: orderdetail
+        description: "Itens dos pedidos."
+  - name: metabase
+    description: "Base operacional Metabase Sample (B2C/SaaS) exposta no schema public do DW."
+    schema: public
+    tables:
+      - name: accounts
+        description: "Contas/clientes SaaS."
+      - name: orders
+        description: "Pedidos/assinaturas B2C."
+
+models:
+  - name: stg_northwind_customers
+    description: "View de staging para clientes Northwind com NK padronizada."
+    columns:
+      - name: customer_nk
+        tests: [not_null, unique]
+      - name: customer_name
+        tests: [not_null]
+  - name: stg_northwind_orders
+    description: "View de staging de pedidos Northwind (cabeçalho)."
+    columns:
+      - name: order_nk
+        tests: [not_null, unique]
+      - name: customer_nk
+        tests: [not_null]
+  - name: stg_northwind_order_details
+    description: "Itens de pedido Northwind tratados para métricas de venda."
+    columns:
+      - name: order_nk
+        tests: [not_null]
+      - name: product_nk
+        tests: [not_null]
+  - name: stg_metabase_accounts
+    description: "Contas/metadados de clientes Metabase com atributos SaaS."
+    columns:
+      - name: customer_nk
+        tests: [not_null, unique]
+  - name: stg_metabase_orders
+    description: "Pedidos Metabase com chaves naturais e métricas."
+    columns:
+      - name: order_nk
+        tests: [not_null, unique]
+      - name: customer_nk
+        tests: [not_null]

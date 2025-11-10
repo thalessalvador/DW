@@ -1,0 +1,12 @@
+version: 2
+
+models:
+  - name: int_customers
+    description: "Camada intermediária que unifica atributos de clientes Northwind e Metabase antes do snapshot SCD2."
+    columns:
+      - name: customer_nk
+        tests: [not_null, unique]
+      - name: source_system
+        tests: [not_null]
+      - name: customer_name
+        tests: [not_null]
