@@ -1,4 +1,9 @@
 # dbt artifacts
-dbt/dw_northwind_metabase/target/
-dbt/dw_northwind_metabase/dbt_packages/
-dbt/dw_northwind_metabase/logs/
+dbt/dw_northwind_metabase/target/**
+!dbt/dw_northwind_metabase/target/.gitkeep
+
+dbt/dw_northwind_metabase/dbt_packages/**
+!dbt/dw_northwind_metabase/dbt_packages/.gitkeep
+
+dbt/dw_northwind_metabase/logs/**
+!dbt/dw_northwind_metabase/logs/.gitkeep
