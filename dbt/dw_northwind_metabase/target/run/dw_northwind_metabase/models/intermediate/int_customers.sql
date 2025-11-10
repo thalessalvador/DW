@@ -57,10 +57,39 @@ metabase as (
         created_at,
         trial_ends_at,
         canceled_at,
-        dw_load_ts
+    dw_load_ts
     from "dw_northwind_metabase"."dw_stg"."stg_metabase_accounts"
+),
+metabase_people as (
+    select
+        source_system,
+        customer_nk,
+        source_customer_id,
+        customer_name,
+        contact_name,
+        contact_title,
+        first_name,
+        last_name,
+        address,
+        city,
+        region,
+        country,
+        postal_code,
+        plan,
+        segment,
+        seats,
+        trial_converted,
+        active_subscription,
+        legacy_plan,
+        created_at,
+        trial_ends_at,
+        canceled_at,
+        dw_load_ts
+    from "dw_northwind_metabase"."dw_stg"."stg_metabase_people"
 )
 select * from northwind
 union all
 select * from metabase
+union all
+select * from metabase_people
   );

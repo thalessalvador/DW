@@ -16,6 +16,102 @@ models:
       - name: order_nk
         tests: [not_null]
       - name: customer_nk
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_nk
       - name: product_nk
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_nk
+      - name: channel_nk
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_channel')
+                field: channel_nk
+  - name: dim_product
+    description: "Dimensão de produtos combinada (Northwind + Metabase) com atributos de categoria/fornecedor."
+    columns:
+      - name: product_sk
+        tests: [not_null, unique]
+      - name: product_nk
+        tests: [not_null, unique]
+  - name: dim_employee
+    description: "Colaboradores/força de vendas Northwind."
+    columns:
+      - name: employee_sk
+        tests: [not_null, unique]
+      - name: employee_nk
+        tests: [not_null, unique]
+  - name: fact_invoices
+    description: "Fato de faturamento recorrente (Metabase invoices)."
+    columns:
+      - name: invoice_nk
+        tests: [not_null, unique]
+      - name: customer_nk
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_nk
+  - name: fact_feedback
+    description: "Feedbacks/NPS capturados na base Metabase."
+    columns:
+      - name: feedback_nk
+        tests: [not_null, unique]
+      - name: customer_nk
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_nk
+  - name: fact_reviews
+    description: "Reviews públicos vinculados ao catálogo de produtos."
+    columns:
+      - name: review_nk
+        tests: [not_null, unique]
+      - name: product_nk
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_nk
+  - name: fact_analytic_events
+    description: "Eventos de analytics (uso do produto)."
+    columns:
+      - name: event_nk
+        tests: [not_null, unique]
+      - name: customer_nk
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_nk
+  - name: dim_date
+    description: "Calendário corporativo com atributos derivados."
+    columns:
+      - name: date_sk
+        tests: [not_null, unique]
+      - name: date_day
+        tests: [not_null, unique]
+  - name: dim_geography
+    description: "Dimensão de localização (país/estado/cidade) consolidada."
+    columns:
+      - name: geography_sk
+        tests: [not_null, unique]
+  - name: dim_channel
+    description: "Dimensão simples de canais (Northwind B2B vs Metabase B2C)."
+    columns:
+      - name: channel_sk
+        tests: [not_null, unique]
+      - name: channel_nk
+        tests: [not_null, unique]

@@ -11,6 +11,14 @@ sources:
         description: "Pedidos B2B."
       - name: orderdetail
         description: "Itens dos pedidos."
+      - name: product
+        description: "Catálogo de produtos Northwind."
+      - name: category
+        description: "Categorias dos produtos."
+      - name: supplier
+        description: "Fornecedores Northwind."
+      - name: employee
+        description: "Colaboradores/força de vendas Northwind."
   - name: metabase
     description: "Base operacional Metabase Sample (B2C/SaaS) exposta no schema public do DW."
     schema: public
@@ -19,6 +27,18 @@ sources:
         description: "Contas/clientes SaaS."
       - name: orders
         description: "Pedidos/assinaturas B2C."
+      - name: products
+        description: "Catálogo de produtos digitais."
+      - name: invoices
+        description: "Receitas recorrentes / faturas SaaS."
+      - name: feedback
+        description: "Feedbacks textuais coletados via suporte."
+      - name: reviews
+        description: "Avaliações públicas dos produtos."
+      - name: analyticevents
+        description: "Eventos de produto/app para analytics."
+      - name: people
+        description: "Dados demográficos usados por alguns pedidos B2C."
 
 models:
   - name: stg_northwind_customers
@@ -54,3 +74,47 @@ models:
         tests: [not_null, unique]
       - name: customer_nk
         tests: [not_null]
+  - name: stg_northwind_products
+    description: "Catálogo Northwind padronizado com categoria e fornecedor."
+    columns:
+      - name: product_nk
+        tests: [not_null, unique]
+  - name: stg_metabase_products
+    description: "Catálogo Metabase Sample (produtos digitais) normalizado."
+    columns:
+      - name: product_nk
+        tests: [not_null, unique]
+  - name: stg_northwind_employees
+    description: "Staging da força de vendas Northwind (dimensão de funcionários)."
+    columns:
+      - name: employee_nk
+        tests: [not_null, unique]
+  - name: stg_metabase_invoices
+    description: "Faturas SaaS com valores financeiros normalizados."
+    columns:
+      - name: invoice_nk
+        tests: [not_null, unique]
+      - name: customer_nk
+        tests: [not_null]
+  - name: stg_metabase_feedback
+    description: "Feedbacks textuais com notas e vínculo ao cliente."
+    columns:
+      - name: feedback_nk
+        tests: [not_null, unique]
+  - name: stg_metabase_reviews
+    description: "Reviews públicos com popularidade do produto."
+    columns:
+      - name: review_nk
+        tests: [not_null, unique]
+      - name: product_nk
+        tests: [not_null]
+  - name: stg_metabase_analytic_events
+    description: "Eventos de produto (app/web) com time series."
+    columns:
+      - name: event_nk
+        tests: [not_null, unique]
+  - name: stg_metabase_people
+    description: "Cadastro de pessoas usado para pedidos B2C sem conta formal."
+    columns:
+      - name: customer_nk
+        tests: [not_null, unique]
