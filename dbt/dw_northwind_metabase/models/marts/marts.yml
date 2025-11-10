@@ -1,0 +1,13 @@
+version: 2
+
+models:
+  - name: dm_sales
+    description: "View consolidada de vendas com enriquecimento de dimensões."
+  - name: dm_b2b
+    description: "Filtro B2B (Northwind) sobre o DM de vendas."
+  - name: dm_b2c
+    description: "Filtro B2C/SaaS (Metabase) sobre o DM de vendas."
+  - name: dm_saas
+    description: "Data mart de faturamento/assinaturas SaaS (fato invoices + cliente + calendário)."
+  - name: dm_product_analytics
+    description: "Data mart de analytics de produto (eventos, reviews e feedbacks unificados)."

@@ -1,0 +1,3 @@
+# dbt artifacts
+dbt/dw_northwind_metabase/target/
+dbt/dw_northwind_metabase/dbt_packages/
