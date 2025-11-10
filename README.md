@@ -127,6 +127,17 @@ dbt/dw_northwind_metabase/
 - As chaves naturais seguem o padrão `NORTHWIND_<id>` ou `METABASE_<id>`, com variações (`METABASE_PERSON_<id>`, `METABASE_ORPHAN_<texto>`) para cobrir pedidos sem vínculo direto a `accounts`.
 - Antes de rodar os marts (`dm_*`), garanta que os fatos/dimensões foram recriados com os dados mais recentes.
 
+### Controle histórico (SCD Type 2)
+
+Foi utilizado um snapshot do dbt (`snapshots/customers_snapshot.sql`) com estratégia `check` e `unique_key = customer_nk`. A cada `dbt snapshot`, o dbt compara os atributos monitorados (nome, cidade, país, plano, segmento, flags SaaS etc.) vindos de `int_customers`. Quando algum atributo varia, o dbt encerra o registro anterior (`dbt_valid_to` preenchido) e insere uma nova linha com os valores atuais (`dbt_valid_from` atualizado). A tabela `dim_customer.sql` lê esse snapshot filtrando `dbt_valid_to IS NULL` para montar o estado corrente, mas expõe `dbt_valid_from`/`dbt_valid_to` e `current_flag` para consultas históricas.
+
+**Resultado prático**:
+- Cada mudança em clientes Northwind ou Metabase fica registrada como nova versão, permitindo analisar métricas “como estava em” qualquer data.
+- Métricas podem ser reproduzidas conforme o contexto temporal — por exemplo, vendas antes/depois de um upgrade de plano.
+- Relatórios “como estava em” tornam-se triviais: basta juntar a fato (`fact_sales`, `fact_invoices`, etc.) com a versão vigente pelo intervalo de validade.
+
+Estratégia baseada no guia: https://medium.com/@wajahatullah.k/using-dbt-snapshots-to-implement-scd-type-2-a-step-by-step-guide-7f2c521cc927
+
 ---
 
 Sinta-se à vontade para ajustar `profiles.yml` (host, usuário, senha) conforme o seu ambiente. Qualquer mudança adicional em fontes ou métricas deve seguir a trilha de execução acima para manter o DW sincronizado.
