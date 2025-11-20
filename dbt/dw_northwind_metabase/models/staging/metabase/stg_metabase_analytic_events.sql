@@ -14,6 +14,7 @@ select
     end                                      as customer_nk,
     ae.account_id                            as source_account_id,
     ae.event                                 as event_name,
+    -- Tratamento de datas inválidas na fonte Metabase (Ex: '0000-00-00'). Se não retornar uma data válida, atribui NULL.
     case
         when ae."timestamp" ~ '^\d{4}-\d{2}-\d{2}'
             then ae."timestamp"::timestamp

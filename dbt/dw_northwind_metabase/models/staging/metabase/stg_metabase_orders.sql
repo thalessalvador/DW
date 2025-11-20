@@ -2,7 +2,7 @@
     materialized='view',
     tags=['staging', 'metabase']
 ) }}
-
+-- Pedidos/eventos comerciais da base Metabase Sample.
 with account_name_map as (
     select
         lower(concat_ws(' ', first_name, last_name)) as full_name_key,
@@ -11,6 +11,7 @@ with account_name_map as (
     where first_name is not null and last_name is not null
     group by 1
 ),
+-- Mapeamento de nomes completos para IDs na tabela people (quando não há conta vinculada).
 people_name_map as (
     select
         lower(name) as full_name_key,
@@ -19,6 +20,7 @@ people_name_map as (
     where name is not null
     group by 1
 ),
+-- Mapeamento de títulos de produtos para IDs na tabela products.
 product_map as (
     select
         lower(title) as title_key,
@@ -41,6 +43,7 @@ select
         else 'METABASE_' || upper(trim(o.product_id))
     end                                       as product_nk,
     null::varchar                            as order_state,
+    -- Tratamento de datas inválidas na fonte Metabase (Ex: '0000-00-00'). Se não retornar uma data válida, atribui NULL.
     case
         when o.created_at ~ '^\d{4}-\d{2}-\d{2}'
             then o.created_at::timestamp

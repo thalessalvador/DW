@@ -15,6 +15,7 @@ select
     'METABASE'                               as source_system,
     r._mb_row_id                             as source_review_id,
     'METABASE_RV_' || r._mb_row_id           as review_nk,
+    -- Associação com produto via chave natural.
     case
         when prod_map.product_id is not null then 'METABASE_' || prod_map.product_id::varchar
         else 'METABASE_' || upper(trim(r.product_id))
@@ -22,6 +23,7 @@ select
     r.product_id                             as source_product_id,
     r.reviewer                               as reviewer_name,
     cast(r.rating as numeric(5,2))           as rating_score,
+    -- Tratamento de datas inválidas na fonte Metabase (Ex: '0000-00-00'). Se não retornar uma data válida, atribui NULL.
     case
         when r.created_at ~ '^\d{4}-\d{2}-\d{2}'
             then r.created_at::timestamp
