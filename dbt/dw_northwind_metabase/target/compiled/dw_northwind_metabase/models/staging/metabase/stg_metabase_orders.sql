@@ -1,5 +1,5 @@
 
-
+-- Pedidos/eventos comerciais da base Metabase Sample.
 with account_name_map as (
     select
         lower(concat_ws(' ', first_name, last_name)) as full_name_key,
@@ -8,6 +8,7 @@ with account_name_map as (
     where first_name is not null and last_name is not null
     group by 1
 ),
+-- Mapeamento de nomes completos para IDs na tabela people (quando não há conta vinculada).
 people_name_map as (
     select
         lower(name) as full_name_key,
@@ -16,10 +17,14 @@ people_name_map as (
     where name is not null
     group by 1
 ),
+-- Mapeamento de títulos de produtos para IDs na tabela products.
 product_map as (
     select
         lower(title) as title_key,
-        min(id)      as product_id
+        min(id)      as product_id,
+        min('METABASE_' || id) as product_nk,
+        min('METABASE_SUP_' || lower(replace(coalesce(vendor,'UNKNOWN'),' ','_'))) as supplier_nk,
+        min('METABASE_CAT_' || lower(replace(coalesce(category,'UNKNOWN'),' ','_'))) as category_nk
     from "dw_northwind_metabase"."public"."products"
     group by 1
 )
@@ -33,11 +38,11 @@ select
         when people_map.person_id is not null then 'METABASE_PERSON_' || people_map.person_id::varchar
         else 'METABASE_ORPHAN_' || upper(trim(o.user_id))
     end                                       as customer_nk,
-    case
-        when prod_map.product_id is not null then 'METABASE_' || prod_map.product_id::varchar
-        else 'METABASE_' || upper(trim(o.product_id))
-    end                                       as product_nk,
+    coalesce(prod_map.product_nk, 'METABASE_' || upper(trim(o.product_id))) as product_nk,
+    coalesce(prod_map.supplier_nk, 'METABASE_SUP_UNKNOWN')                  as supplier_nk,
+    coalesce(prod_map.category_nk, 'METABASE_CAT_UNKNOWN')                  as category_nk,
     null::varchar                            as order_state,
+    -- Tratamento de datas inválidas na fonte Metabase (Ex: '0000-00-00'). Se não retornar uma data válida, atribui NULL.
     case
         when o.created_at ~ '^\d{4}-\d{2}-\d{2}'
             then o.created_at::timestamp

@@ -20,6 +20,7 @@ select
     a.trial_converted                      as trial_converted,
     a.active_subscription                  as active_subscription,
     a.legacy_plan                          as legacy_plan,
+    -- Tratamento de datas inválidas na fonte Metabase (Ex: '0000-00-00'). Se não retornar uma data válida, atribui NULL.
     case
         when a.created_at ~ '^\d{4}-\d{2}-\d{2}'
             then a.created_at::timestamp

@@ -8,6 +8,8 @@ select
     'NORTHWIND'                                   as source_system,
     p.productid                                   as source_product_id,
     'NORTHWIND_' || p.productid                   as product_nk,
+    'NORTHWIND_SUP_' || p.supplierid              as supplier_nk,
+    'NORTHWIND_CAT_' || p.categoryid              as category_nk,
     p.productname                                 as product_name,
     c.categoryname                                as category_name,
     s.companyname                                 as supplier_name,
@@ -17,6 +19,8 @@ select
     p.unitsonorder                                as units_on_order,
     p.reorderlevel                                as reorder_level,
     p.discontinued = '1'                          as is_discontinued,
+    null::numeric(5,2)                            as rating_score,
+    null::timestamp                               as product_created_at,
     current_timestamp                             as dw_load_ts
 from {{ source('northwind', 'product') }} p
 left join {{ source('northwind', 'category') }} c

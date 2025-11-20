@@ -29,6 +29,8 @@ sources:
         description: "Pedidos/assinaturas B2C."
       - name: products
         description: "Catálogo de produtos digitais."
+      - name: people
+        description: "Dados demográficos usados por alguns pedidos B2C."
       - name: invoices
         description: "Receitas recorrentes / faturas SaaS."
       - name: feedback
@@ -37,8 +39,6 @@ sources:
         description: "Avaliações públicas dos produtos."
       - name: analyticevents
         description: "Eventos de produto/app para analytics."
-      - name: people
-        description: "Dados demográficos usados por alguns pedidos B2C."
 
 models:
   - name: stg_northwind_customers
@@ -74,16 +74,6 @@ models:
         tests: [not_null, unique]
       - name: customer_nk
         tests: [not_null]
-  - name: stg_northwind_products
-    description: "Catálogo Northwind padronizado com categoria e fornecedor."
-    columns:
-      - name: product_nk
-        tests: [not_null, unique]
-  - name: stg_metabase_products
-    description: "Catálogo Metabase Sample (produtos digitais) normalizado."
-    columns:
-      - name: product_nk
-        tests: [not_null, unique]
   - name: stg_northwind_employees
     description: "Staging da força de vendas Northwind (dimensão de funcionários)."
     columns:
@@ -117,4 +107,24 @@ models:
     description: "Cadastro de pessoas usado para pedidos B2C sem conta formal."
     columns:
       - name: customer_nk
+        tests: [not_null, unique]
+  - name: stg_northwind_suppliers
+    description: "Fornecedores Northwind com NK padronizada."
+    columns:
+      - name: supplier_nk
+        tests: [not_null, unique]
+  - name: stg_northwind_categories
+    description: "Categorias Northwind com NK padronizada."
+    columns:
+      - name: category_nk
+        tests: [not_null, unique]
+  - name: stg_northwind_products
+    description: "Catálogo Northwind padronizado com chaves de fornecedor e categoria."
+    columns:
+      - name: product_nk
+        tests: [not_null, unique]
+  - name: stg_metabase_products
+    description: "Catálogo Metabase Sample com vendor/category padronizados."
+    columns:
+      - name: product_nk
         tests: [not_null, unique]

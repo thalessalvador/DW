@@ -10,3 +10,13 @@ models:
         tests: [not_null]
       - name: customer_name
         tests: [not_null]
+  - name: int_suppliers
+    description: "Unifica fornecedores das fontes Northwind e Metabase (vendor)."
+    columns:
+      - name: supplier_nk
+        tests: [not_null, unique]
+  - name: int_products
+    description: "Catálogo combinado de produtos B2B/B2C com NKs de fornecedor e categoria."
+    columns:
+      - name: product_nk
+        tests: [not_null, unique]

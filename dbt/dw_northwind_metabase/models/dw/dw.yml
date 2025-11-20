@@ -22,6 +22,18 @@ models:
               arguments:
                 to: ref('dim_customer')
                 field: customer_nk
+      - name: supplier_nk
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_supplier')
+                field: supplier_nk
+      - name: category_nk
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_category')
+                field: category_nk
       - name: product_nk
         tests:
           - not_null
@@ -29,6 +41,12 @@ models:
               arguments:
                 to: ref('dim_product')
                 field: product_nk
+      - name: employee_nk
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_employee')
+                field: employee_nk
       - name: channel_nk
         tests:
           - not_null
@@ -37,18 +55,32 @@ models:
                 to: ref('dim_channel')
                 field: channel_nk
   - name: dim_product
-    description: "Dimensão de produtos combinada (Northwind + Metabase) com atributos de categoria/fornecedor."
+    description: "Dimensão de produtos combinada (Northwind + Metabase) com atributos de categoria/fornecedor e SCD2."
     columns:
       - name: product_sk
         tests: [not_null, unique]
       - name: product_nk
         tests: [not_null, unique]
+  - name: dim_supplier
+    description: "Dimensão de fornecedores (Northwind + vendors Metabase) com SCD2."
+    columns:
+      - name: supplier_sk
+        tests: [not_null, unique]
+      - name: supplier_nk
+        tests: [not_null, unique]
   - name: dim_employee
-    description: "Colaboradores/força de vendas Northwind."
+    description: "Colaboradores/força de vendas Northwind (SCD2)."
     columns:
       - name: employee_sk
         tests: [not_null, unique]
       - name: employee_nk
+        tests: [not_null, unique]
+  - name: dim_category
+    description: "Dimensão de categorias (SCD1) combinando Northwind e Metabase."
+    columns:
+      - name: category_sk
+        tests: [not_null, unique]
+      - name: category_nk
         tests: [not_null, unique]
   - name: fact_invoices
     description: "Fato de faturamento recorrente (Metabase invoices)."

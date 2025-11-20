@@ -8,6 +8,8 @@ select
     'METABASE'                               as source_system,
     p.id                                     as source_product_id,
     'METABASE_' || p.id                      as product_nk,
+    'METABASE_SUP_' || lower(replace(coalesce(p.vendor,'UNKNOWN'),' ','_')) as supplier_nk,
+    'METABASE_CAT_' || lower(replace(coalesce(p.category,'UNKNOWN'),' ','_')) as category_nk,
     p.title                                  as product_name,
     p.category                               as category_name,
     p.vendor                                 as vendor_name,

@@ -24,7 +24,10 @@ people_name_map as (
 product_map as (
     select
         lower(title) as title_key,
-        min(id)      as product_id
+        min(id)      as product_id,
+        min('METABASE_' || id) as product_nk,
+        min('METABASE_SUP_' || lower(replace(coalesce(vendor,'UNKNOWN'),' ','_'))) as supplier_nk,
+        min('METABASE_CAT_' || lower(replace(coalesce(category,'UNKNOWN'),' ','_'))) as category_nk
     from {{ source('metabase', 'products') }}
     group by 1
 )
@@ -38,10 +41,9 @@ select
         when people_map.person_id is not null then 'METABASE_PERSON_' || people_map.person_id::varchar
         else 'METABASE_ORPHAN_' || upper(trim(o.user_id))
     end                                       as customer_nk,
-    case
-        when prod_map.product_id is not null then 'METABASE_' || prod_map.product_id::varchar
-        else 'METABASE_' || upper(trim(o.product_id))
-    end                                       as product_nk,
+    coalesce(prod_map.product_nk, 'METABASE_' || upper(trim(o.product_id))) as product_nk,
+    coalesce(prod_map.supplier_nk, 'METABASE_SUP_UNKNOWN')                  as supplier_nk,
+    coalesce(prod_map.category_nk, 'METABASE_CAT_UNKNOWN')                  as category_nk,
     null::varchar                            as order_state,
     -- Tratamento de datas inválidas na fonte Metabase (Ex: '0000-00-00'). Se não retornar uma data válida, atribui NULL.
     case
