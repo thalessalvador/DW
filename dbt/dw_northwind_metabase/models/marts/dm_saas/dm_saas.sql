@@ -1,9 +1,9 @@
 {{ config(
-    materialized='view',
-    tags=['mart', 'saas']
+    materialized="view",
+    tags=["mart", "saas"]
 ) }}
 
--- Data mart para faturamento SaaS (Metabase invoices) com enriquecimento de cliente e calendário.
+-- Data mart para faturamento SaaS (Metabase invoices) com joins SCD2 usando o intervalo completo.
 with invoices as (
     select
         fi.invoice_nk,
@@ -21,7 +21,8 @@ with invoices as (
     from {{ ref('fact_invoices') }} fi
     left join {{ ref('dim_customer') }} dc
            on fi.customer_nk = dc.customer_nk
-          and dc.current_flag
+          and fi.date_received::date >= coalesce(dc.dbt_valid_from, date '1900-01-01')
+          and fi.date_received::date <  coalesce(dc.dbt_valid_to,   date '9999-12-31')
     left join {{ ref('dim_date') }} dd
            on fi.date_received::date = dd.date_day
 )

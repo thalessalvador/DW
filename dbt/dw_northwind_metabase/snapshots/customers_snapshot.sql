@@ -5,16 +5,7 @@
         target_schema='snapshots',
         unique_key='customer_nk',
         strategy='check',
-        check_cols=[
-            'customer_name',
-            'city',
-            'country',
-            'plan',
-            'segment',
-            'trial_converted',
-            'active_subscription',
-            'legacy_plan'
-        ]
+        check_cols=['customer_name', 'contact_name', 'first_name', 'last_name', 'address', 'city', 'region', 'country', 'postal_code', 'plan', 'segment', 'seats', 'active_subscription', 'canceled_at']
     )
 }}
 

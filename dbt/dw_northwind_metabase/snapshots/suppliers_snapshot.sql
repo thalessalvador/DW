@@ -5,15 +5,7 @@
         target_schema='snapshots',
         unique_key='supplier_nk',
         strategy='check',
-        check_cols=[
-            'supplier_name',
-            'contact_name',
-            'contact_title',
-            'city',
-            'region',
-            'country',
-            'phone'
-        ]
+        check_cols=['supplier_name', 'contact_name', 'city', 'region', 'country']
     )
 }}
 

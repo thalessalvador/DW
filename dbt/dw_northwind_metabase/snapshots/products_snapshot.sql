@@ -5,14 +5,7 @@
         target_schema='snapshots',
         unique_key='product_nk',
         strategy='check',
-        check_cols=[
-            'product_name',
-            'supplier_nk',
-            'category_nk',
-            'unit_price',
-            'rating_score',
-            'is_discontinued'
-        ]
+        check_cols=['product_name', 'supplier_name', 'unit_price', 'rating_score']
     )
 }}
 

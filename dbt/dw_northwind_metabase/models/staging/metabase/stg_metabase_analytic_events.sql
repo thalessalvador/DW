@@ -9,7 +9,7 @@ select
     ae.id                                    as source_event_id,
     'METABASE_EVT_' || ae.id                 as event_nk,
     case
-        when acc.id is not null then 'METABASE_' || acc.id::varchar
+        when acc.id is not null then 'METABASE_ACCOUNT_' || acc.id::varchar
         else null
     end                                      as customer_nk,
     ae.account_id                            as source_account_id,

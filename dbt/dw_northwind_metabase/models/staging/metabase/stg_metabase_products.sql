@@ -14,7 +14,7 @@ select
     p.category                               as category_name,
     p.vendor                                 as vendor_name,
     cast(p.price as numeric(12,4))           as unit_price,
-    cast(p.rating as numeric(5,2))           as rating_score,
+    cast(p.rating as numeric(5,2))           as rating,
     case
         when p.created_at ~ '^\d{4}-\d{2}-\d{2}'
             then p.created_at::timestamp

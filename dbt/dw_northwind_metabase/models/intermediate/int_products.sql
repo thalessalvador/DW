@@ -3,8 +3,7 @@
     tags=['intermediate', 'products']
 ) }}
 
-with
-stg_northwind as (
+with stg_northwind as (
     select
         source_system,
         source_product_id,
@@ -20,7 +19,7 @@ stg_northwind as (
         units_on_order,
         reorder_level,
         is_discontinued,
-        rating_score,
+        null::decimal as rating_score, -- Northwind não tem rating
         product_created_at,
         dw_load_ts
     from {{ ref('stg_northwind_products') }}
@@ -42,7 +41,7 @@ stg_metabase as (
         null::integer as units_on_order,
         null::integer as reorder_level,
         false as is_discontinued,
-        rating_score,
+        rating as rating_score, -- Padroniza para rating_score
         created_at as product_created_at,
         dw_load_ts
     from {{ ref('stg_metabase_products') }}
@@ -67,9 +66,9 @@ select
     unit_price,
     units_in_stock,
     units_on_order,
-    reorder_level,
+reorder_level,
     is_discontinued,
-    rating_score,
+    rating_score, -- A coluna já está com o nome padronizado
     product_created_at,
     dw_load_ts
 from unioned

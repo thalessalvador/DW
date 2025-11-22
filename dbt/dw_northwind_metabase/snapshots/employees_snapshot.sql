@@ -5,18 +5,7 @@
         target_schema='snapshots',
         unique_key='employee_nk',
         strategy='check',
-        check_cols=[
-            'first_name',
-            'last_name',
-            'job_title',
-            'courtesy_title',
-            'city',
-            'region',
-            'country',
-            'postal_code',
-            'phone',
-            'manager_empid'
-        ]
+        check_cols=['first_name', 'last_name', 'job_title', 'city', 'region', 'country', 'postal_code', 'manager_empid']
     )
 }}
 

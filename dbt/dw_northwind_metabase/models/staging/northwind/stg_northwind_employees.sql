@@ -14,6 +14,7 @@ select
     e.titleofcourtesy                             as courtesy_title,
     cast(e.birthdate as date)                     as birth_date,
     cast(e.hiredate as date)                      as hire_date,
+
     e.city                                        as city,
     coalesce(nullif(e.region, ''), 'N/A')         as region,
     e.country                                     as country,

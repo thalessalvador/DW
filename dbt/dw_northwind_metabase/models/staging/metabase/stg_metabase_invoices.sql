@@ -10,7 +10,7 @@ select
     'METABASE_' || i.id                      as invoice_nk,
     -- Associação com cliente/conta via chave natural.
     case
-        when acc.id is not null then 'METABASE_' || acc.id::varchar
+        when acc.id is not null then 'METABASE_ACCOUNT_' || acc.id::varchar
         else null
     end                                      as customer_nk,
     i.account_id                             as source_account_id,

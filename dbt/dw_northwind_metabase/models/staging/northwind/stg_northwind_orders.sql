@@ -9,7 +9,10 @@ select
     o.orderid                                   as source_order_id,
     'NORTHWIND_' || o.orderid                   as order_nk,
     'NORTHWIND_' || o.custid                    as customer_nk,
-    'NORTHWIND_' || o.empid                     as employee_nk,
+    case
+        when o.empid is not null then 'NORTHWIND_' || o.empid
+        else 'NORTHWIND_EMP_UNKNOWN'
+    end                                         as employee_nk,
     'NORTHWIND_' || o.shipperid                 as shipper_nk,
     cast(o.orderdate as date)                   as order_date,
     cast(o.requireddate as date)                as required_date,
