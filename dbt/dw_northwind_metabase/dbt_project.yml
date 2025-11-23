@@ -53,4 +53,4 @@ vars:
   # Data de corte para a Carga Inicial.
   # Registros criados antes desta data ser?o retroagidos para 1900-01-01.
   # Registros criados depois desta data manter?o sua data real de entrada.
-  data_hora_carga_inicial: '2025-11-21 00:00:00'
+  data_hora_carga_inicial: '2025-11-23 00:00:00'

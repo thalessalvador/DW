@@ -40,30 +40,11 @@ select
     coalesce(prod_map.product_nk, 'METABASE_' || upper(trim(o.product_id))) as product_nk,
     coalesce(prod_map.supplier_nk, 'METABASE_SUP_UNKNOWN')                  as supplier_nk,
     coalesce(prod_map.category_nk, 'METABASE_CAT_UNKNOWN')                  as category_nk,
-    null::varchar as employee_nk, -- não há vendedor associado na base B2C
+    null::varchar as employee_nk,
     null::varchar as order_state,
-    -- Date parsing: ISO or month in PT-BR.
+    -- Date parsing: ISO only (orders created_at vem em ISO na base padrão).
     case
-        when o.created_at ~ '^\\d{4}-\\d{2}-\\d{2}' then o.created_at::timestamptz
-        when o.created_at ~ '^[A-Za-zÀ-ÿ]' then to_timestamp(
-            regexp_replace(
-                replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(
-                    translate(lower(o.created_at), 'çáàâãäéèêëíìîïóòôõöúùûü','caaaaaeeeeiiiioooouuuu'),
-                    'janeiro','jan'),
-                    'fevereiro','feb'),
-                    'marco','mar'),
-                    'abril','apr'),
-                    'maio','may'),
-                    'junho','jun'),
-                    'julho','jul'),
-                    'agosto','aug'),
-                    'setembro','sep'),
-                    'outubro','oct'),
-                    'novembro','nov'),
-                    'dezembro','dec'),
-                ' *[-+]\\d{2}:?\\d{2}$',''),
-            'Mon DD, YYYY, HH12:MI AM'
-        )::timestamptz
+        when o.created_at ~ '^\d{4}-\d{2}-\d{2}' then o.created_at::timestamptz
         else null
     end as order_date,
     cast(null as timestamp) as shipped_date,

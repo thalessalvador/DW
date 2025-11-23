@@ -49,7 +49,7 @@ select
     -- mas preserva a data real de entrada para novos clientes no futuro.
     case
         when s.dbt_valid_from = f.first_valid_from
-             and s.dbt_valid_from <= cast('2025-11-21 00:00:00' as timestamp)
+             and s.dbt_valid_from <= cast('2025-11-23 00:00:00' as timestamp)
         then timestamp '1900-01-01'
         else s.dbt_valid_from
     end as dbt_valid_from,

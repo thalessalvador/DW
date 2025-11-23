@@ -6,27 +6,18 @@
 -- Data mart consolidado de vendas.
 -- As junções são simples e diretas, pois o fact_sales já resolveu as chaves substitutas (SKs) corretas para cada venda.
 select
-    -- Chaves e métricas da fato
+    -- Fato
     fs.order_nk,
     fs.source_system,
     fs.order_date,
     fs.quantity,
     fs.gross_amount,
     fs.net_amount,
-    -- SKs para rastreabilidade
-    fs.dim_customer_sk,
-    fs.dim_product_sk,
-    fs.dim_supplier_sk,
-    fs.dim_category_sk,
-    fs.dim_employee_sk,
-    fs.dim_channel_sk,
-    -- Atributos de cliente/produto etc. resolvidos via SK (já “as of”)
-    dc.customer_nk,
+    -- Dimensões
     dc.customer_name,
     dc.city as customer_city,
     dc.segment,
     dc.country as customer_country,
-    dp.product_nk,
     dp.product_name,
     dcat.category_name,
     ds.supplier_name,
