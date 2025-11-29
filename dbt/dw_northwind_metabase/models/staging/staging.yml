@@ -67,6 +67,30 @@ models:
     columns:
       - name: customer_nk
         tests: [not_null, unique]
+      - name: source_system
+        description: "Sistema de origem (METABASE)."
+      - name: source_customer_id
+        description: "ID original na tabela accounts."
+      - name: customer_name
+        description: "Nome completo concatenado."
+      - name: email
+        description: "E-mail do cliente."
+      - name: plan
+        description: "Plano de assinatura (ex: Premium, Business)."
+      - name: source
+        description: "Canal de aquisição (ex: Organic, Twitter)."
+      - name: segment
+        description: "Segmento de mercado (mesmo que source neste caso)."
+      - name: seats
+        description: "Número de assentos contratados."
+      - name: country
+        description: "País do cliente."
+      - name: trial_converted
+        description: "Se converteu após o trial."
+      - name: active_subscription
+        description: "Se a assinatura está ativa."
+      - name: created_at
+        description: "Data de criação da conta."
   - name: stg_metabase_orders
     description: "Pedidos Metabase com chaves naturais e métricas."
     columns:

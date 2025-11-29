@@ -18,10 +18,38 @@ select
     cast(i.payment as numeric(12,4))         as payment_amount,
     i.expected_invoice                       as expected_invoice_flag,
     -- Tratamento de datas inválidas na fonte Metabase (Ex: '0000-00-00'). Se não retornar uma data válida, atribui NULL.
+    -- Tratamento de datas inválidas na fonte Metabase (Ex: '0000-00-00'). Se não retornar uma data válida, atribui NULL.
+    -- Date parsing: Handles localized format (e.g., "julho 28, 2025, 11:18 AM")
     case
-        when i.date_received ~ '^\d{4}-\d{2}-\d{2}'
-            then i.date_received::timestamp
-        else null
+        when i.date_received ~ '^\d{4}-\d{2}-\d{2}' then i.date_received::timestamp
+        else
+            to_timestamp(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(lower(i.date_received), 
+                    'janeiro', 'january'),
+                    'fevereiro', 'february'),
+                    'março', 'march'),
+                    'abril', 'april'),
+                    'maio', 'may'),
+                    'junho', 'june'),
+                    'julho', 'july'),
+                    'agosto', 'august'),
+                    'setembro', 'september'),
+                    'outubro', 'october'),
+                    'novembro', 'november'),
+                    'dezembro', 'december'),
+                'fmmonth dd, yyyy, hh12:mi am'
+            )
     end                                      as date_received,
     current_timestamp                        as dw_load_ts
 from {{ source('metabase', 'invoices') }} i

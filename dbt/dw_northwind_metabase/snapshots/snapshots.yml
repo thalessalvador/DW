@@ -1,0 +1,65 @@
+version: 2
+
+snapshots:
+  - name: customers_snapshot
+    description: "Snapshot SCD2 para a tabela unificada de clientes (Northwind + Metabase). Monitora mudanças em atributos chave como endereço, plano e segmento."
+    config:
+      strategy: check
+      target_schema: snapshots
+      unique_key: customer_nk
+      check_cols:
+        - customer_name
+        - contact_name
+        - first_name
+        - last_name
+        - address
+        - city
+        - region
+        - country
+        - postal_code
+        - plan
+        - segment
+        - seats
+        - active_subscription
+        - canceled_at
+
+  - name: products_snapshot
+    description: "Snapshot SCD2 para produtos unificados. Monitora mudanças de preço, nome e fornecedor."
+    config:
+      strategy: check
+      target_schema: snapshots
+      unique_key: product_nk
+      check_cols:
+        - product_name
+        - supplier_name
+        - unit_price
+        - rating_score
+
+  - name: suppliers_snapshot
+    description: "Snapshot SCD2 para fornecedores unificados. Monitora mudanças de endereço e contato."
+    config:
+      strategy: check
+      target_schema: snapshots
+      unique_key: supplier_nk
+      check_cols:
+        - supplier_name
+        - contact_name
+        - city
+        - region
+        - country
+
+  - name: employees_snapshot
+    description: "Snapshot SCD2 para colaboradores da Northwind. Monitora promoções (job_title) e mudanças de endereço."
+    config:
+      strategy: check
+      target_schema: snapshots
+      unique_key: employee_nk
+      check_cols:
+        - first_name
+        - last_name
+        - job_title
+        - city
+        - region
+        - country
+        - postal_code
+        - manager_empid

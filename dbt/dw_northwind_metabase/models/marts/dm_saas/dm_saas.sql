@@ -20,9 +20,7 @@ with invoices as (
         dd.month_name
     from {{ ref('fact_invoices') }} fi
     left join {{ ref('dim_customer') }} dc
-           on fi.customer_nk = dc.customer_nk
-          and fi.date_received::date >= coalesce(dc.dbt_valid_from, date '1900-01-01')
-          and fi.date_received::date <  coalesce(dc.dbt_valid_to,   date '9999-12-31')
+           on fi.dim_customer_sk = dc.customer_sk
     left join {{ ref('dim_date') }} dd
            on fi.date_received::date = dd.date_day
 )

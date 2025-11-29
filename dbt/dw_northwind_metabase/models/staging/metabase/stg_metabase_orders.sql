@@ -38,9 +38,38 @@ select
     null::varchar as employee_nk,
     null::varchar as order_state,
     -- Date parsing: ISO only (orders created_at vem em ISO na base padrão).
+    -- Date parsing: Handles localized format (e.g., "julho 28, 2025, 11:18 AM")
+    -- Converts Portuguese months to English and casts to timestamp using the correct format mask.
     case
         when o.created_at ~ '^\d{4}-\d{2}-\d{2}' then o.created_at::timestamptz
-        else null
+        else
+            to_timestamp(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(lower(o.created_at), 
+                    'janeiro', 'january'),
+                    'fevereiro', 'february'),
+                    'março', 'march'),
+                    'abril', 'april'),
+                    'maio', 'may'),
+                    'junho', 'june'),
+                    'julho', 'july'),
+                    'agosto', 'august'),
+                    'setembro', 'september'),
+                    'outubro', 'october'),
+                    'novembro', 'november'),
+                    'dezembro', 'december'),
+                'fmmonth dd, yyyy, hh12:mi am'
+            )
     end as order_date,
     cast(null as timestamp) as shipped_date,
     cast(o.quantity as numeric(12,4)) as quantity,

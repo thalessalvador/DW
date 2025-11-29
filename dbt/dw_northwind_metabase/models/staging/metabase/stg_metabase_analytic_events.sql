@@ -15,10 +15,38 @@ select
     ae.account_id                            as source_account_id,
     ae.event                                 as event_name,
     -- Tratamento de datas inválidas na fonte Metabase (Ex: '0000-00-00'). Se não retornar uma data válida, atribui NULL.
+    -- Tratamento de datas inválidas na fonte Metabase (Ex: '0000-00-00'). Se não retornar uma data válida, atribui NULL.
+    -- Date parsing: Handles localized format (e.g., "julho 28, 2025, 11:18 AM")
     case
-        when ae."timestamp" ~ '^\d{4}-\d{2}-\d{2}'
-            then ae."timestamp"::timestamp
-        else null
+        when ae."timestamp" ~ '^\d{4}-\d{2}-\d{2}' then ae."timestamp"::timestamp
+        else
+            to_timestamp(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(lower(ae."timestamp"), 
+                    'janeiro', 'january'),
+                    'fevereiro', 'february'),
+                    'março', 'march'),
+                    'abril', 'april'),
+                    'maio', 'may'),
+                    'junho', 'june'),
+                    'julho', 'july'),
+                    'agosto', 'august'),
+                    'setembro', 'september'),
+                    'outubro', 'october'),
+                    'novembro', 'november'),
+                    'dezembro', 'december'),
+                'fmmonth dd, yyyy, hh12:mi am'
+            )
     end                                      as event_timestamp,
     ae.page_url                              as page_url,
     ae.button_label                          as button_label,

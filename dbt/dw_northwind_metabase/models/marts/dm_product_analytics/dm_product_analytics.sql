@@ -19,9 +19,7 @@ with events as (
         null::varchar      as product_name
     from {{ ref('fact_analytic_events') }} fa
     left join {{ ref('dim_customer') }} dc
-           on fa.customer_nk = dc.customer_nk
-          and fa.event_timestamp >= coalesce(dc.dbt_valid_from, timestamp '1900-01-01')
-          and fa.event_timestamp <  coalesce(dc.dbt_valid_to,   timestamp '9999-12-31')
+           on fa.dim_customer_sk = dc.customer_sk
 ),
 reviews as (
     select
@@ -38,9 +36,7 @@ reviews as (
         dp.product_name
     from {{ ref('fact_reviews') }} fr
     left join {{ ref('dim_product') }} dp
-           on fr.product_nk = dp.product_nk
-          and fr.created_at >= coalesce(dp.dbt_valid_from, timestamp '1900-01-01')
-          and fr.created_at <  coalesce(dp.dbt_valid_to,   timestamp '9999-12-31')
+           on fr.dim_product_sk = dp.product_sk
 ),
 feedback as (
     select
@@ -57,9 +53,7 @@ feedback as (
         null::varchar      as product_name
     from {{ ref('fact_feedback') }} ff
     left join {{ ref('dim_customer') }} dc
-           on ff.customer_nk = dc.customer_nk
-          and ff.date_received >= coalesce(dc.dbt_valid_from, timestamp '1900-01-01')
-          and ff.date_received <  coalesce(dc.dbt_valid_to,   timestamp '9999-12-31')
+           on ff.dim_customer_sk = dc.customer_sk
 )
 select * from events
 union all

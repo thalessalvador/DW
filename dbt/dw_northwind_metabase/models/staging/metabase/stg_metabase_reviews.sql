@@ -24,10 +24,38 @@ select
     r.reviewer                               as reviewer_name,
     cast(r.rating as numeric(5,2))           as rating_score,
     -- Tratamento de datas inválidas na fonte Metabase (Ex: '0000-00-00'). Se não retornar uma data válida, atribui NULL.
+    -- Tratamento de datas inválidas na fonte Metabase (Ex: '0000-00-00'). Se não retornar uma data válida, atribui NULL.
+    -- Date parsing: Handles localized format (e.g., "julho 28, 2025, 11:18 AM")
     case
-        when r.created_at ~ '^\d{4}-\d{2}-\d{2}'
-            then r.created_at::timestamp
-        else null
+        when r.created_at ~ '^\d{4}-\d{2}-\d{2}' then r.created_at::timestamp
+        else
+            to_timestamp(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(
+                replace(lower(r.created_at), 
+                    'janeiro', 'january'),
+                    'fevereiro', 'february'),
+                    'março', 'march'),
+                    'abril', 'april'),
+                    'maio', 'may'),
+                    'junho', 'june'),
+                    'julho', 'july'),
+                    'agosto', 'august'),
+                    'setembro', 'september'),
+                    'outubro', 'october'),
+                    'novembro', 'november'),
+                    'dezembro', 'december'),
+                'fmmonth dd, yyyy, hh12:mi am'
+            )
     end                                      as created_at,
     r.body                                   as review_text,
     current_timestamp                        as dw_load_ts

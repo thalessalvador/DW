@@ -11,12 +11,14 @@ Projeto acadêmico que consolida as bases **Northwind** (ERP B2B) e **Metabase S
 - **DW core (`dw_dw`):** dimensões SCD2 (`dim_customer`, `dim_product`, `dim_supplier`, `dim_employee`) e dimensões padrão (`dim_category`, `dim_date`, `dim_geography`, `dim_channel`) com fatos (`fact_sales`, `fact_invoices`, `fact_feedback`, `fact_reviews`, `fact_analytic_events`).
 - **Data marts (`dw_dm_*`):** `dm_sales`, `dm_b2b`, `dm_b2c`, `dm_saas`, `dm_product_analytics`.
 
+
 ## Pré-requisitos
 
 - **Python 3.13+** (uso de `venv` recomendado).
 - **dbt-postgres 1.9.1** (instalado no `.venv`).
 - **PostgreSQL 12** local: host `localhost`, porta `5433`, usuário `postgres`, senha `123456`, banco `dw_northwind_metabase`.
-- Tabelas de origem acessíveis via FDW no schema `public` do DW.
+- Bases de dados de origem: `northwind` e `sample_metabase_pg` (ambos no PostgreSQL). Na pasta Documentos há os dumps dessas bases.
+- Tabelas de origem acessíveis via FDW no schema `public` do DW (explicação na próxima seção).
 
 ### Configurando o PostgreSQL FDW
 Execute no banco `dw_northwind_metabase` (ajuste host/porta/credenciais se necessário):
@@ -116,6 +118,22 @@ Foi utilizado o padrão de snapshots do dbt (`*_snapshot.sql`, estratégia `chec
 
 Estratégia baseada no guia: https://docs.getdbt.com/docs/build/snapshots#check-strategy
 
+### Estratégias de Snapshot: Check vs Timestamp
+
+Para fins de documentação, existem duas estratégias principais para snapshots no dbt:
+
+1.  **Timestamp (Ideal)**:
+    *   **Como funciona**: O dbt confia em uma coluna de auditoria na origem (`updated_at`) para saber *exatamente* quando o registro mudou.
+    *   **Vantagem**: Precisão total. Mudanças intra-dia são capturadas com o horário exato.
+    *   **Por que não usamos**: As tabelas do Metabase (`people`, `products`) não possuem uma coluna `updated_at` confiável.
+
+2.  **Check (Adotada)**:
+    *   **Como funciona**: O dbt compara o hash das colunas monitoradas (`check_cols`) com a versão anterior.
+    *   **Limitação (Delay)**: A mudança só é detectada quando o snapshot roda. Ex: Se o cliente muda às 14h e o snapshot roda às 23h, para o DW a mudança ocorreu às 23h.
+    *   **Mitigação**: Execução diária do pipeline para minimizar a janela de latência para < 24h.
+
+Este foi o maior desafio do projeto. Iniciamos com a estratégia timestamp, realizando a criação de triggers na base original para que ao atualizar o cliente ou produto, o banco adicionasse uma coluna updated_at com a data e hora da atualização. Isso trouxe complexidade ao projeto e no mundo real, nem sempre temos autorização para alterar a base de dados original. Então optamos pela estratégia check, sabendo que há uma latência a ser considerada, o que costuma ser irrisório para um DW em que a latência é de 24h horas, por exemplo. Se essa perda não fosse aceitável, seria necessário implementar uma estratégia de timestamp, alterando a base original.
+
 ### Colunas Monitoradas (Check Strategy)
 Abaixo estão as colunas configuradas (`check_cols`) para detecção de mudanças em cada snapshot:
 
@@ -157,12 +175,10 @@ Graças ao backdating para `1900-01-01`, vendas antigas (ex: 1998) encontram seu
 ---
 Sinta-se à vontade para ajustar `profiles.yml` (host, usuário, senha) conforme o ambiente. Qualquer mudança adicional em fontes ou métricas deve seguir a trilha de execução acima para manter o DW sincronizado.
 
-
+### Exemplo do SCD2 em Ação
+1) Inserções iniciais (v1) – base sample_metabase_pg
+Pessoas v1
 ```sql
--- Um exemplo de como ver o SCD2 em Ação
-
--- 1) Inserções iniciais (v1) – base sample_metabase_pg
--- Pessoas v1
 insert into public.people (id, name, email, city, state, source, created_at) values
   (9001, 'Alice Ramos',  'alice.ramos@example.com',  'São Paulo', 'SP', 'web', current_timestamp),
   (9002, 'Bruno Nogueira','bruno.nogueira@example.com','Campinas','SP','web', current_timestamp);
@@ -176,20 +192,19 @@ insert into public.products (id, title, category, vendor, price, rating, created
 insert into public.orders (id, user_id, product_id, subtotal, tax, total, discount____, created_at, quantity) values
   (20001, 'Alice Ramos', 'Fone Bluetooth Conforto', 299.00, 29.90, 328.90, 0.00, current_timestamp, 1);
 
-
---2) Rodar o dbt (refletir v1)
---No projeto dbt (dbt/dw_northwind_metabase), com venv ativo e --DBT_PROFILES_DIR setado:
-
+```
+2) Rodar o dbt (refletir v1)
+No projeto dbt (dbt/dw_northwind_metabase), com venv ativo e --DBT_PROFILES_DIR setado:
+```powershell
 dbt run --select tag:staging
 dbt run --select intermediate
 dbt snapshot --select products_snapshot suppliers_snapshot employees_snapshot customers_snapshot
 dbt run --select dim_customer dim_product dim_supplier dim_employee dim_category dim_date dim_geography dim_channel fact_sales fact_invoices fact_feedback fact_reviews fact_analytic_events
 dbt run --select dm_sales dm_b2b dm_b2c dm_saas dm_product_analytics
-
-
---3) Updates + nova compra (v2) – base sample_metabase_pg
+```
+3) Updates + nova compra (v2) – base sample_metabase_pg
 Agora altere atributos e insira a nova compra.
-
+```sql
 -- Cliente muda de cidade
 update public.people set city = 'Santos' where id = 9001;
 
@@ -197,86 +212,92 @@ update public.people set city = 'Santos' where id = 9001;
 update public.products set price = 279.00 where id = 9001;
 
 -- Nova compra após as mudanças
+-- Observação sobre a Estratégia SCD2 (Check vs Timestamp):
+-- Como a base de origem (metabase_sample_pg) não possui uma coluna 'updated_at' confiável
+-- e não podemos alterar o schema de produção, adotamos a estratégia 'check'.
+-- Limitação: Mudanças feitas no mesmo dia da compra (antes do snapshot rodar) não são
+-- refletidas imediatamente. A compra abaixo ficará vinculada à versão anterior do cliente. Aceitamos isso como decisão de projeto de não mudar a base original.
 insert into public.orders (id, user_id, product_id, subtotal, tax, total, discount____, created_at, quantity) values
   (20002, 'Alice Ramos', 'Fone Bluetooth Conforto', 279.00, 27.90, 306.90, 0.00, current_timestamp, 1);
-
-
---4) Rodar o dbt novamente (refletir v2)
-Repita o passo 2
-
-
---5) Northwind – Inserções iniciais (v1)
-Use antes do primeiro dbt run/snapshot.
-
--- Clientes
-insert into public.customer (custid, companyname, contactname, contacttitle, address, city, country, phone) values
-  (9001, 'Comercial Aurora',        'Marina Souza',  'Sócia',   'Rua das Acácias, 100',  'São Paulo',      'Brazil', '+55 11 3333-0001'),
-  (9002, 'Distribuidora Horizonte', 'João Prado',    'Diretor', 'Av. do Progresso, 250', 'Belo Horizonte', 'Brazil', '+55 31 4444-0002');
-
--- Fornecedores
-insert into public.supplier (supplierid, companyname, contactname, contacttitle, address, city, country, phone) values
-  (9001, 'Sabores do Cerrado', 'Lucas Martins', 'Proprietário', 'Av. Central, 10',  'Goiânia',      'Brazil', '+55 62 5555-0001'),
-  (9002, 'Delícias da Serra',  'Ana Ribeiro',   'Proprietária', 'Rua da Serra, 50', 'Juiz de Fora', 'Brazil', '+55 32 5555-0002');
-
--- Funcionários (datas relativas)
-insert into public.employee (empid, lastname, firstname, title, city, country, hiredate, birthdate) values
-  (9001, 'Mendes',  'Paula',  'Vendedora', 'Curitiba', 'Brazil', current_date, date '1990-01-01'),
-  (9002, 'Almeida', 'Carlos', 'Vendedor',  'Recife',   'Brazil', current_date, date '1991-02-02');
-
--- Produtos
-insert into public.product (productid, productname, supplierid, categoryid, quantityperunit, unitprice,
-                            unitsinstock, unitsonorder, reorderlevel, discontinued) values
-  (9001, 'Kit Café Especial', 9001, 1, '12 pacotes 500g',     25.00, 20, 0, 5, '0'),
-  (9002, 'Chá Mate com Ervas',9002, 1, '24 caixas 20 sachês', 18.50, 15, 0, 5, '0');
-
--- Venda v1 (custid é varchar)
-insert into public.salesorder (orderid, custid, empid, orderdate, requireddate, shippeddate,
-                               shipperid, freight, shipname, shipaddress, shipcity, shipregion, shippostalcode, shipcountry)
-values
-  (20001, '9001', 9001, current_timestamp, current_timestamp, current_timestamp,
-   1, 25.00, 'Entrega Aurora', 'Rua das Acácias, 100', 'São Paulo', null, '01000-000', 'Brazil');
-
-insert into public.orderdetail (orderid, productid, unitprice, qty, discount) values
-  (20001, 9001, 25.00, 1, 0.00);
-
----6) Rodar o dbt (refletir v1)
---No projeto dbt/dw_northwind_metabase:
-Repita o passo 2
-
----7) Northwind – Updates + nova venda (v2)
-
--- Cliente muda de nome
-update public.customer
-   set companyname = 'Comercial Aurora (Nova Marca)'
- where custid = 9001;
-
--- Fornecedor muda de nome
-update public.supplier
-   set companyname = 'Sabores do Cerrado Ltda.'
- where supplierid = 9001;
-
--- Funcionário promovido
-update public.employee
-   set title = 'Gerente de Vendas'
- where empid = 9001;
-
--- Produto muda preço e fornecedor
-update public.product
-   set unitprice = 27.90, supplierid = 9002
- where productid = 9001;
-
--- Nova venda após as mudanças
-insert into public.salesorder (orderid, custid, empid, orderdate, requireddate, shippeddate,
-                               shipperid, freight, shipname, shipaddress, shipcity, shipregion, shippostalcode, shipcountry)
-values
-  (20002, '9001', 9001, current_timestamp, current_timestamp, current_timestamp,
-   1, 27.90, 'Entrega Aurora', 'Rua das Acácias, 100', 'São Paulo', null, '01000-000', 'Brazil');
-
-insert into public.orderdetail (orderid, productid, unitprice, qty, discount) values
-  (20002, 9001, 27.90, 1, 0.00);
-
---8) Rode a pipeine
-Repita o passo 2
-
---9)Observe os resultados nas fact_* em joins com as dim_* e também nos dm_*
 ```
+4) Rodar o dbt novamente 
+Repita o passo 2
+
+5) Esta compra entra com o endereço correto do cliente.
+```sql
+insert into public.orders (id, user_id, product_id, subtotal, tax, total, discount____, created_at, quantity) values
+  (20003, 'Alice Ramos', 'Fone Bluetooth Conforto', 279.00, 27.90, 306.90, 0.00, current_timestamp, 1);
+```
+
+6) Rodar o dbt novamente (refletir v2 do cliente)
+Repita o passo 2
+
+## Visualizando os dados
+Exemplo real:  Consulta Histórica "Como era no momento da venda?"
+```sql
+-- Mostra a cidade onde o cliente morava NA DATA DA COMPRA
+select 
+    f.order_date,
+    c.customer_name,
+    c.city as city_momento_venda, -- Cidade histórica
+    f.net_amount
+from dw_dw.fact_sales f
+join dw_dw.dim_customer c 
+  on f.dim_customer_sk = c.customer_sk
+where c.customer_name = 'Alice Ramos';
+```
+Exemplo real:  Consulta atual "Como é hoje?"
+```sql
+-- Mostra todas as vendas, mas com a cidade ATUAL do cliente
+select 
+    f.order_date,
+    c_atual.customer_name,
+    c_atual.city as city_atual, -- Cidade atual
+    f.net_amount
+from dw_dw.fact_sales f
+-- 1. Join com a dimensão histórica (pelo SK da fato) para descobrir quem é o cliente (NK)
+join dw_dw.dim_customer c_hist 
+  on f.dim_customer_sk = c_hist.customer_sk
+-- 2. Join com a versão ATUAL do mesmo cliente (pelo NK)
+join dw_dw.dim_customer c_atual 
+  on c_hist.customer_nk = c_atual.customer_nk
+where c_atual.current_flag = true -- Filtra apenas a versão mais recente
+  and c_atual.customer_name = 'Alice Ramos';
+```
+## Diagramas do Pipeline
+
+Abaixo estão os diagramas de entidade-relacionamento (DER) organizados conforme o fluxo de dados do pipeline. Clique nas imagens para ampliar.
+
+### 1. Origens (Raw)
+<a href="Documentos/Diagramas/northwind.png" target="_blank"><img src="Documentos/Diagramas/northwind.png" width="400" alt="Northwind ERP"></a>
+<a href="Documentos/Diagramas/sample_metabase_pg.png" target="_blank"><img src="Documentos/Diagramas/sample_metabase_pg.png" width="400" alt="Metabase Sample"></a>
+<br>
+*Visão consolidada no schema Public (FDW):*
+<br>
+<a href="Documentos/Diagramas/public%20(raw%20das%20duas%20bases).png" target="_blank"><img src="Documentos/Diagramas/public%20(raw%20das%20duas%20bases).png" width="600" alt="Schema Public Raw"></a>
+
+### 2. Staging (dw_stg)
+Visualização das views de normalização e padronização.
+<br>
+<a href="Documentos/Diagramas/dw_stg.png" target="_blank"><img src="Documentos/Diagramas/dw_stg.png" width="600" alt="Staging Area"></a>
+
+### 3. Snapshots (SCD2)
+Tabelas de controle histórico.
+<br>
+<a href="Documentos/Diagramas/dw_snapshots.png" target="_blank"><img src="Documentos/Diagramas/dw_snapshots.png" width="600" alt="Snapshots"></a>
+
+### 4. Data Warehouse (dw_dw)
+Modelo Star Schema (Fatos e Dimensões).
+<br>
+<a href="Documentos/Diagramas/dw_dw.png" target="_blank"><img src="Documentos/Diagramas/dw_dw.png" width="600" alt="DW Core"></a>
+
+### 5. Data Marts (dw_dm_*)
+Tabelões analíticos (OBT) para consumo final.
+<br>
+<a href="Documentos/Diagramas/data_marts.png" target="_blank"><img src="Documentos/Diagramas/data_marts.png" width="600" alt="Data Marts"></a>
+
+### 6. DBT DAG
+Como os dados fluem dentro do projeto:
+Sources (Origens) -> Staging -> Intermediate -> Fatos/Dimensões -> Data Marts
+<br>
+<a href="Documentos/Diagramas/dbt-dag.png" target="_blank"><img src="Documentos/Diagramas/dbt-dag.png" width="600" alt="dbt dag"></a>
