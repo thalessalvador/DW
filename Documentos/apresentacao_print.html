@@ -14,6 +14,8 @@
 
 * {
   box-sizing: border-box;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 body {
@@ -140,6 +142,34 @@ ul { list-style: none; padding: 0; }
 li { position: relative; padding-left: 25px; margin-bottom: 15px; }
 li::before { content: '▹'; color: #4ade80; position: absolute; left: 0; }
 
+/* PRINT STYLES */
+@media print {
+    @page {
+        size: 1280px 720px;
+        margin: 0;
+    }
+    body {
+        background: none;
+        display: block;
+        padding: 0;
+        margin: 0;
+    }
+    .slide-container {
+        break-after: always;
+        page-break-after: always;
+        margin: 0;
+        border: none;
+        box-shadow: none;
+        width: 1280px;
+        height: 720px;
+        border-radius: 0;
+    }
+    /* Ensure background graphics are printed */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
 </style>
 </head>
 <body>
@@ -417,8 +447,6 @@ li::before { content: '▹'; color: #4ade80; position: absolute; left: 0; }
         <p>Carlos Henrique Barbosa da Silva</p>
     </div>
 </div>
-
-
 
 </body>
 </html>
