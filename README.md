@@ -1,6 +1,10 @@
 ﻿# Data Warehouse Northwind + Metabase (dbt + PostgreSQL)
 
-Projeto acadêmico que consolida as bases **Northwind** (ERP B2B) e **Metabase Sample** (SaaS B2C) em um Data Warehouse no PostgreSQL 12, modelado e orquestrado via **dbt**.
+Projeto acadêmico que consolida as bases **Northwind** (ERP B2B) e **Metabase Sample** (SaaS B2C) em um Data Warehouse no PostgreSQL 12, modelado e orquestrado via **dbt**. 
+
+*Utilizamos o PostgreSQL 12 pela facilidade de já
+termos instalado na máquina, mas o código é aderente a
+versões mais recentes.* 
 
 ## Arquitetura lógica
 
