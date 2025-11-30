@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DW Northwind + Metabase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+/* 1. THE SETUP */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #111;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr;
+  margin: 0;
+  min-height: 100vh;
+  padding: 20px 0;
+  place-items: center;
+  font-family: 'Inter', sans-serif;
+}
+
+.slide-container {
+  align-items: center;
+  background-color: #0a0a0a;
+  background-image: radial-gradient(circle at 15% 50%, rgba(34, 197, 94, 0.08), transparent 25%), radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08), transparent 25%);
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  height: 720px;
+  justify-content: center;
+  overflow: hidden;
+  padding: 60px;
+  position: relative;
+  width: 1280px;
+  border: 1px solid #222;
+}
+
+.slide-container::before {
+  content: '';
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 0;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle, black 40%, transparent 80%);
+}
+
+.slide-container>* {
+  position: relative;
+  z-index: 1;
+}
+
+/* TYPOGRAPHY */
+.slide-container h1, .slide-container h2, .slide-container h3, .slide-container h4 {
+  color: #fff;
+  font-weight: 700;
+  font-family: 'Space Grotesk', sans-serif;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.slide-container h1 span, .slide-container h2 span, .accent-text {
+  color: #4ade80;
+}
+
+.slide-container p, .slide-container li, .slide-container .subtitle {
+  color: #9ca3af;
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
+  line-height: 1.6;
+}
+
+.slide-container h1 { font-size: 80px; line-height: 1.1; }
+.slide-container .slide-title {
+  font-size: 48px;
+  font-weight: 600;
+  margin-bottom: 40px;
+  text-align: left;
+  width: 100%;
+  border-left: 4px solid #4ade80;
+  padding-left: 20px;
+}
+.slide-container h3 { font-size: 28px; margin-bottom: 15px; color: #e5e7eb; }
+
+/* LAYOUTS */
+.title-layout { text-align: center; z-index: 2; }
+.content-area { display: flex; flex-direction: column; flex-grow: 1; justify-content: center; width: 100%; }
+
+.two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; width: 100%; align-items: center; }
+.two-column.tiled { align-items: stretch; }
+.two-column.tiled>div { background-color: #171717; border-radius: 12px; border: 1px solid #333; padding: 40px; }
+
+.image-wrapper {
+  border-radius: 12px;
+  height: 400px;
+  width: 100%;
+  border: 1px solid #333;
+  overflow: hidden;
+  background-color: #171717;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.image-wrapper img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+.tiled-content { display: flex; gap: 30px; width: 100%; }
+.tile { background-color: #171717; border-radius: 12px; border: 1px solid #333; flex: 1; padding: 30px; text-align: center; }
+.tile .icon { color: #4ade80; font-size: 48px; margin-bottom: 25px; display: inline-block; }
+
+/* TIMELINE */
+.timeline-layout { display: flex; justify-content: space-between; position: relative; width: 100%; margin-top: 40px; }
+.timeline-layout .timeline-line { background: linear-gradient(90deg, #22c55e, #3b82f6); height: 4px; position: absolute; top: 25px; width: 100%; z-index: 0; opacity: 0.5; }
+.timeline-item { position: relative; text-align: center; width: 19%; z-index: 1; }
+.timeline-item::before { background-color: #111; border: 3px solid #4ade80; border-radius: 50%; content: ''; height: 20px; width: 20px; display: block; margin: 15px auto; box-shadow: 0 0 10px #4ade80; }
+.timeline-item .content-wrapper { margin-top: 20px; background: #171717; padding: 15px; border-radius: 8px; border: 1px solid #333; }
+.timeline-item h3 { font-size: 18px; margin-bottom: 5px; }
+.timeline-item p { font-size: 14px; }
+
+/* BLEED LAYOUT */
+.slide-container.bleed-image-layout { display: grid; grid-template-columns: 1fr 1fr; padding: 0; gap: 0; }
+.slide-container.bleed-image-layout .content-container { padding: 80px 60px; display: flex; flex-direction: column; justify-content: center; }
+.slide-container.bleed-image-layout .image-container { height: 100%; width: 100%; position: relative; background: #171717; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.slide-container.bleed-image-layout .image-container img { width: 100%; height: 100%; object-fit: cover; }
+
+ul { list-style: none; padding: 0; }
+li { position: relative; padding-left: 25px; margin-bottom: 15px; }
+li::before { content: '▹'; color: #4ade80; position: absolute; left: 0; }
+
+</style>
+</head>
+<body>
+
+<!-- Slide 1: Capa -->
+<div class="slide-container" id="slide1">
+    <div class="title-layout">
+        <h3 style="color: #4ade80; letter-spacing: 2px; text-transform: uppercase; font-size: 18px; margin-bottom: 20px;">Tópicos Avançados em Inteligência Artificial II</h3>
+        <h1>DW Northwind + <span>Metabase</span></h1>
+        <p class="subtitle">Consolidação de ERP (B2B) e SaaS (B2C) com dbt e PostgreSQL em um Data Warehouse</p>
+    </div>
+</div>
+
+<!-- Slide 2: Visão Geral -->
+<div class="slide-container" id="slide2">
+    <h2 class="slide-title">Visão do Projeto</h2>
+    <div class="content-area">
+        <div class="two-column tiled">
+            <div>
+                <h3><i class="fa-solid fa-layer-group"></i> O Cenário</h3>
+                <p>Uma empresa opera com dois modelos de negócio distintos:</p>
+                <ul>
+                    <li><strong>Northwind (B2B):</strong> Venda de produtos alimentícios (ERP legado).</li>
+                    <li><strong>Metabase Sample (B2C):</strong> SaaS de assinaturas e produtos tecnológicos.</li>
+                </ul>
+            </div>
+            <div>
+                <h3><i class="fa-solid fa-bullseye"></i> O Objetivo</h3>
+                <p>Unificar essas origens díspares em um único <strong>Data Warehouse</strong> no PostgreSQL, utilizando <strong>dbt</strong> para orquestração e transformação, habilitando análises cruzadas de produtos e performance de vendas.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 3: Arquitetura Lógica -->
+<div class="slide-container" id="slide3">
+    <h2 class="slide-title">Arquitetura Lógica (FDW)</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div>
+                <h3>Unificação via Foreign Data Wrapper</h3>
+                <p>Para evitar pipelines complexos de ingestão inicial, utilizamos o recurso nativo <strong>PostgreSQL FDW</strong>.</p>
+                <ul>
+                    <li>As bases <code>northwind</code> e <code>sample_metabase</code> são mapeadas como schemas estrangeiros dentro do DW.</li>
+                    <li>O dbt lê diretamente do schema <code>public</code> (Raw), onde essas tabelas estão expostas.</li>
+                </ul>
+            </div>
+            <div class="image-wrapper">
+                <!-- Usando a imagem de fontes raw consolidada -->
+                <img src="Diagramas/public (raw das duas bases).png" alt="Schema Public Raw com as duas origens" style="object-fit: contain;"> 
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 4: Fluxo de Dados (DAG) -->
+<div class="slide-container" id="slide4">
+    <h2 class="slide-title">Pipeline de Transformação (DAG)</h2>
+    <div class="content-area">
+        <div class="image-wrapper">
+                <!-- Usando a imagem de fontes raw consolidada -->
+                <img src="Diagramas/dbt-dag.png" alt="dbt dag" style="object-fit: contain;"> 
+            </div>
+        <p style="margin-top: 20px; text-align: center; font-size: 16px;">
+            Raw (FDW) &rarr; Staging (Padronização) &rarr; Intermediate (Consolidação) &rarr; Snapshots (SCD2) &rarr; Fatos/Dimensões. <br>
+            Gráfico interativo gerado pelo comando<code>dbt docs generate</code> seguido pelo comando <code>dbt docs serve</code>
+        </p>
+    </div>
+</div>
+
+<!-- Slide 5: Desafio Técnico - SCD Type 2 -->
+<div class="slide-container" id="slide5">
+    <h2 class="slide-title">Desafio: Historização (SCD2)</h2>
+    <div class="content-area">
+        <div class="two-column tiled">
+            <div>
+                <h3>O Problema</h3>
+                <p>Precisávamos historizar mudanças de clientes e produtos (ex: mudança de endereço ou preço), mas as bases de origem <strong>não possuíam colunas confiáveis de auditoria</strong> (<code>updated_at</code>).</p>
+            </div>
+            <div>
+                <h3>A Solução: Strategy 'Check'</h3>
+                <p>Adotamos a estratégia de snapshot <code>check</code> do dbt.</p>
+                <ul>
+                    <li>O dbt cria um hash das colunas monitoradas (ex: <code>city</code>, <code>unit_price</code>).</li>
+                    <li>Quando o hash muda, uma nova versão é criada no DW.</li>
+                    <li><strong>Trade-off:</strong> Aceita-se uma latência de D-1 em troca de não precisar alterar o banco de produção com triggers.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 6: Snapshot Check -->
+<div class="slide-container" id="slide4">
+    <h2 class="slide-title">Snapshot Check</h2>
+    <div class="content-area">
+        <div style="margin-top: 20px; border: 1px solid #333; border-radius: 8px; overflow: hidden;">
+            <table style="width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif; font-size: 18px; color: #e5e7eb;">
+                <thead>
+                    <tr style="background-color: #1f1f1f; text-align: left;">
+                        <th style="padding: 8px 12px; border-bottom: 1px solid #333; color: #fff;">Entidade</th>
+                        <th style="padding: 8px 12px; border-bottom: 1px solid #333; color: #fff;">Colunas Monitoradas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid #222;">
+                        <td style="padding: 8px 12px; font-weight: 600;">Customers</td>
+                        <td style="padding: 8px 12px; line-height: 1.4;">
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">customer_name</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">contact_name</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">first_name</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">last_name</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">address</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">city</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">region</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">country</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">postal_code</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">plan</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">segment</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">seats</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">active_subscription</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">canceled_at</code>
+                        </td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #222;">
+                        <td style="padding: 8px 12px; font-weight: 600;">Products</td>
+                        <td style="padding: 8px 12px; line-height: 1.4;">
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">product_name</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">supplier_name</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">unit_price</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">rating_score</code>
+                        </td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #222;">
+                        <td style="padding: 8px 12px; font-weight: 600;">Suppliers</td>
+                        <td style="padding: 8px 12px; line-height: 1.4;">
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">supplier_name</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">contact_name</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">city</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">region</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">country</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 12px; font-weight: 600;">Employees</td>
+                        <td style="padding: 8px 12px; line-height: 1.4;">
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">first_name</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">last_name</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">job_title</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">city</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">region</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">country</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">postal_code</code>, 
+                            <code style="background: #2d2d2d; padding: 1px 4px; border-radius: 3px; color: #4ade80; font-family: monospace;">manager_empid</code>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 7: Tratamento de Backdating -->
+<div class="slide-container" id="slide6">
+    <h2 class="slide-title">Lógica de Backdating</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div>
+                 <div class="image-wrapper">
+                    <img src="Diagramas/dw_snapshots.png" alt="dw_snapshots" style="object-fit: contain;">
+                </div>
+            </div>
+            <div>
+                <h3>Evitando "Fatos Órfãos"</h3>
+                <p>Como o snapshot começou a rodar hoje, vendas de 1998 ficariam sem dimensão correspondente.</p>
+                <p><strong>Implementação:</strong></p>
+                <ul>
+                    <li>Na dimensão, se for a primeira versão do registro, forçamos o <code>dbt_valid_from</code> para <code>1900-01-01</code>.</li>
+                    <li>Isso garante que joins históricos (ex: <code>fact_sales</code> join <code>dim_customer</code>) funcionem para dados legados.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 8: Modelagem Dimensional -->
+<div class="slide-container" id="slide7">
+    <h2 class="slide-title">Modelagem Star Schema (DW Core)</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div>
+                <h3>Dimensões Unificadas</h3>
+                <ul>
+                    <li><code>dim_customer</code>: Unifica clientes B2B (Northwind) e usuários B2C (Metabase).</li>
+                    <li><code>dim_product</code>: Produtos físicos e planos de assinatura.</li>
+                </ul>
+                <h3>Fatos de Negócio</h3>
+                <ul>
+                    <li><code>fact_sales</code>: Vendas consolidadas.</li>
+                    <li><code>fact_analytic_events</code>: Eventos de clique/navegação do SaaS.</li>
+                </ul>
+            </div>
+             <div class="image-wrapper" style="background: #222;">
+                <img src="Diagramas/dw_dw.png" alt="dw_dw" style="object-fit: contain;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 9: Data Marts (Entregáveis) -->
+<div class="slide-container bleed-image-layout" id="slide8">
+    <div class="content-container">
+        <h2 class="slide-title">Data Marts</h2>
+        <div class="bleed-text-side">
+            <p>A camada final (Gold) entrega tabelas prontas para consumo (OBT - One Big Table):</p>
+            <ul>
+                <li><strong>dm_sales:</strong> Visão geral de receita.</li>
+                <li><strong>dm_b2b / dm_b2c:</strong> Visões segmentadas por modelo de negócio.</li>
+                <li><strong>dm_saas:</strong> Métricas de recorrência e churn.</li>
+                <li><strong>dm_product_analytics:</strong> Performance de produtos vs avaliações.</li>
+            </ul>
+        </div>
+    </div>
+    <div class="image-container">
+        <img src="Diagramas/data_marts.png" alt="data_marts" style="object-fit: contain;">
+    </div>
+</div>
+
+<!-- Slide 10: Stack Tecnológico -->
+<div class="slide-container" id="slide9">
+    <h2 class="slide-title">Stack Tecnológico</h2>
+    <div class="content-area">
+        <div class="tiled-content">
+            <div class="tile">
+                <div class="icon"><i class="fa-brands fa-python"></i></div>
+                <h3>Python 3.13</h3>
+                <p>Ambiente virtual e gestão de dependências.</p>
+            </div>
+            <div class="tile">
+                <div class="icon"><i class="fa-solid fa-cube"></i></div>
+                <h3>dbt-postgres 1.9</h3>
+                <p>Modelagem, testes (Data Quality) e Snapshots.</p>
+            </div>
+            <div class="tile">
+                <div class="icon"><i class="fa-solid fa-database"></i></div>
+                <h3>PostgreSQL</h3>
+                <p>Data Warehouse local com extensão FDW ativa.</p>
+                <p style="font-size: 12px; color: #6b7280; margin-top: 15px; font-style: italic;">* Utilizamos o PostgreSQL 12 pela facilidade de já termos instalado na máquina, mas o código é aderente a versões mais recentes.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 11: Conclusão -->
+<div class="slide-container" id="slide10">
+    <div class="qa-layout">
+        <h1>Dúvidas?</h1>
+        <p class="subtitle">Documentação completa e código fonte:</p>
+        <p style="margin-top: 10px; color: #4ade80; font-size: 28px;">github.com/thalessalvador/DW</p>
+        <div style="margin-top: 10px; border: 1px solid #333; padding: 20px; display: inline-block; border-radius: 8px;">
+            <p style="margin: 0; font-size: 16px; color: #666;">Comandos principais:</p>
+            <code style="color: #4ade80; font-family: monospace;">dbt run --select tag:staging</code><br>
+            <code style="color: #4ade80; font-family: monospace;">dbt run --select intermediate</code><br>
+            <code style="color: #4ade80; font-family: monospace;">dbt snapshot --select products_snapshot suppliers_snapshot employees_snapshot customers_snapshot</code><br>
+            <code style="color: #4ade80; font-family: monospace;">dbt run --select dim_customer dim_product dim_supplier dim_employee dim_category dim_date dim_geography dim_channel fact_sales fact_invoices fact_feedback fact_reviews fact_analytic_events</code>
+            <code style="color: #4ade80; font-family: monospace;">dbt run --select dm_sales dm_b2b dm_b2c dm_saas dm_product_analytics</code><br>
+            <p style="margin: 0; font-size: 16px; color: #666;">Comandos acessórios:</p>
+            <code style="color: #4ade80; font-family: monospace;">dbt run tests</code><br>
+            <code style="color: #4ade80; font-family: monospace;">dbt docs generate</code><br>
+            <code style="color: #4ade80; font-family: monospace;">dbt docs serve</code><br>
+        </div>
+        <br><br>
+        <h2>Alunos</h2>
+        <p>Thales Augusto Salvador</p>
+        <p>Carlos Henrique Barbosa da Silva</p>
+    </div>
+</div>
+
+
+
+</body>
+</html>
