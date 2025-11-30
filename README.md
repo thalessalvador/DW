@@ -16,7 +16,7 @@ Projeto acadêmico que consolida as bases **Northwind** (ERP B2B) e **Metabase S
 
 - **Python 3.13+** (uso de `venv` recomendado).
 - **dbt-postgres 1.9.1** (instalado no `.venv`).
-- **PostgreSQL 12** local: host `localhost`, porta `5433`, usuário `postgres`, senha `123456`, banco `dw_northwind_metabase`.
+- **PostgreSQL 12** local: host `localhost`, porta `5433`, usuário `postgres`, senha `123456`, banco `dw_northwind_metabase`. (mude esses parâmetros se necessário em sua base.)
 - Bases de dados de origem: `northwind` e `sample_metabase_pg` (ambos no PostgreSQL). Na pasta Documentos há os dumps dessas bases.
 - Tabelas de origem acessíveis via FDW no schema `public` do DW (explicação na próxima seção).
 
