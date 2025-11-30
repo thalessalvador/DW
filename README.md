@@ -305,3 +305,13 @@ Como os dados fluem dentro do projeto:
 Sources (Origens) -> Staging -> Intermediate -> Fatos/Dimensões -> Data Marts
 <br>
 <a href="Documentos/Diagramas/dbt-dag.png" target="_blank"><img src="Documentos/Diagramas/dbt-dag.png" width="600" alt="dbt dag"></a>
+
+# Dasboards Metabase
+
+Abaixo estão os dashboards criados no Metabase para visualizar os dados do Data Warehouse.
+
+### 1. Visão Geral de Vendas
+<a href="Documentos/Dashboards/Visao-Geral-de-Vendas-·-Painel-·-Metabase.png" target="_blank"><img src="Documentos/Dashboards/Visao-Geral-de-Vendas-·-Painel-·-Metabase.png" width="500" alt="Metabase Visão Geral de Vendas"></a>
+
+### 2. SaaS (Recorrência)
+<a href="Documentos/Dashboards/SaaS-Recorrencia-·-Painel-·-Metabase.png" target="_blank"><img src="Documentos/Dashboards/SaaS-Recorrencia-·-Painel-·-Metabase.png" width="500" alt="Metabase SaaS Recorrente"></a>
